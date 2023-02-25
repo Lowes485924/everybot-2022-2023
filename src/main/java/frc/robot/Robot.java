@@ -11,9 +11,7 @@
 
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.VictorSPXControlMode;
-import com.ctre.phoenix.motorcontrol.can.VictorSPX;
+
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
@@ -25,12 +23,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Robot extends TimedRobot {
   
   //Definitions for the hardware. Change this if you change what stuff you have plugged in
-  CANSparkMax driveLeftA = new CANSparkMax(1, MotorType.kBrushed);
-  CANSparkMax driveLeftB = new CANSparkMax(2, MotorType.kBrushed);
-  CANSparkMax driveRightA = new CANSparkMax(3, MotorType.kBrushed);
-  CANSparkMax driveRightB = new CANSparkMax(4, MotorType.kBrushed);
+  CANSparkMax driveLeftA = new CANSparkMax(1, MotorType.kBrushless);
+  CANSparkMax driveLeftB = new CANSparkMax(2, MotorType.kBrushless);
+  CANSparkMax driveRightA = new CANSparkMax(3, MotorType.kBrushless);
+  CANSparkMax driveRightB = new CANSparkMax(4, MotorType.kBrushless);
   CANSparkMax arm = new CANSparkMax(5, MotorType.kBrushless);
-  VictorSPX intake = new VictorSPX(6);
+  CANSparkMax intake = new CANSparkMax(6, MotorType.kBrushless);
 
   Joystick driverController = new Joystick(0);
 
@@ -58,13 +56,13 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     //Configure motors to turn correct direction. You may have to invert some of your motors
-    driveLeftA.setInverted(true);
+    driveLeftA.setInverted(false);
     driveLeftA.burnFlash();
-    driveLeftB.setInverted(true);
+    driveLeftB.setInverted(false);
     driveLeftB.burnFlash();
-    driveRightA.setInverted(false);
+    driveRightA.setInverted(true);
     driveRightA.burnFlash();
-    driveRightB.setInverted(false);
+    driveRightB.setInverted(true);
     driveRightB.burnFlash();
     
     arm.setInverted(false);
@@ -111,17 +109,17 @@ public class Robot extends TimedRobot {
       //series of timed events making up the flow of auto
       if(autoTimeElapsed < 3){
         //spit out the ball for three seconds
-        intake.set(ControlMode.PercentOutput, -1);
+        intake.set(-1);
       }else if(autoTimeElapsed < 6){
         //stop spitting out the ball and drive backwards *slowly* for three seconds
-        intake.set(ControlMode.PercentOutput, 0);
+        intake.set(0);
         driveLeftA.set(-0.3);
         driveLeftB.set(-0.3);
         driveRightA.set(-0.3);
         driveRightB.set(-0.3);
       }else{
         //do nothing for the rest of auto
-        intake.set(ControlMode.PercentOutput, 0);
+        intake.set(0);
         driveLeftA.set(0);
         driveLeftB.set(0);
         driveRightA.set(0);
@@ -151,13 +149,13 @@ public class Robot extends TimedRobot {
 
     //Intake controls
     if(driverController.getRawButton(5)){
-      intake.set(VictorSPXControlMode.PercentOutput, 1);;
+      intake.set(1);;
     }
     else if(driverController.getRawButton(7)){
-      intake.set(VictorSPXControlMode.PercentOutput, -1);
+      intake.set(-1);
     }
     else{
-      intake.set(VictorSPXControlMode.PercentOutput, 0);
+      intake.set(0);
     }
 
     //Arm Controls
@@ -198,7 +196,7 @@ public class Robot extends TimedRobot {
     driveRightA.set(0);
     driveRightB.set(0);
     arm.set(0);
-    intake.set(ControlMode.PercentOutput, 0);
+    intake.set(0);
   }
     
 }
