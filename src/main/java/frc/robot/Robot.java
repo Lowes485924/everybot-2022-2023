@@ -10,7 +10,7 @@
 */
 
 package frc.robot;
-
+//TODO add pigeon and auto level
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -130,15 +130,19 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    armUp = false;
+  }
 
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
     //Set up arcade steer
-    double forward = MathUtil.applyDeadband(-driverController.getRawAxis(1), .1);
-    double turn = MathUtil.applyDeadband(-driverController.getRawAxis(2), .1);
-    
+    double forward = MathUtil.applyDeadband(-driverController.getRawAxis(3), .1);
+    double turn = MathUtil.applyDeadband(-driverController.getRawAxis(0), .1);
+    if(turn > 0.5){
+      turn = 0.5;
+    }
     double driveLeftPower = forward - turn;
     double driveRightPower = forward + turn;
 
