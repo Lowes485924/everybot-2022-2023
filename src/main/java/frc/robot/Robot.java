@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import edu.wpi.first.math.MathUtil;
 public class Robot extends TimedRobot {
   
   //Definitions for the hardware. Change this if you change what stuff you have plugged in
@@ -136,8 +136,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     //Set up arcade steer
-    double forward = -driverController.getRawAxis(1);
-    double turn = -driverController.getRawAxis(2);
+    double forward = MathUtil.applyDeadband(-driverController.getRawAxis(1), .1);
+    double turn = MathUtil.applyDeadband(-driverController.getRawAxis(2), .1);
     
     double driveLeftPower = forward - turn;
     double driveRightPower = forward + turn;
