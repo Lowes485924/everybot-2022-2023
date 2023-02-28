@@ -20,6 +20,10 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+i//mport edu.wpi.first.math.controller.ProfiledPIDController;
+import com.ctre.phoenix.sensors.WPI_Pigeon2;
+
 public class Robot extends TimedRobot {
   
   //Definitions for the hardware. Change this if you change what stuff you have plugged in
@@ -31,6 +35,11 @@ public class Robot extends TimedRobot {
   CANSparkMax intake = new CANSparkMax(6, MotorType.kBrushless);
 
   Joystick driverController = new Joystick(0);
+
+  WPI_Pigeon2 gyro = new WPI_Pigeon2(3);
+
+  PIDController leveler = new PIDController(.05, 0, 0);
+
 
   //Constants for controlling the arm. consider tuning these for your particular robot
   final double armHoldUp = 0.08;
@@ -48,7 +57,9 @@ public class Robot extends TimedRobot {
   double autoStart = 0;
   boolean goForAuto = false;
 
-
+  double kP = .05;
+  double kI = 0;
+  double kD = 0;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -72,6 +83,7 @@ public class Robot extends TimedRobot {
     //add a thing on the dashboard to turn off auto if needed
     SmartDashboard.putBoolean("Go For Auto", false);
     goForAuto = SmartDashboard.getBoolean("Go For Auto", false);
+
   }
 
   @Override
@@ -201,6 +213,28 @@ public class Robot extends TimedRobot {
     driveRightB.set(0);
     arm.set(0);
     intake.set(0);
+  }
+    /**
+   * Sets all drive motors to set speed
+   *
+   * @param speed Speed of motors.
+   * 
+   */
+  public void drive(double speed){
+    driveLeftA.set(speed);
+    driveLeftB.set(speed);
+    driveRightA.set(speed);
+    driveRightB.set(speed);
+  }
+
+    /**
+   * Attempts to level the robot on the platform
+   */
+  public void attemptLevel(){
+    leveler.setTolerance(2);
+    while(leveler.atSetpoint() != false){
+      drive(leveler.calculate(gyro.getPitch(), 0));
+    }
   }
     
 }
