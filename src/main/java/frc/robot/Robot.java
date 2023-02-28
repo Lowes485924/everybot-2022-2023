@@ -18,11 +18,13 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 //import edu.wpi.first.math.controller.ProfiledPIDController;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
-
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 public class Robot extends TimedRobot {
   
   //Definitions for the hardware. Change this if you change what stuff you have plugged in
@@ -36,8 +38,8 @@ public class Robot extends TimedRobot {
   Joystick driverController = new Joystick(0);
   Joystick gunnerController = new Joystick(1);
 
-  WPI_Pigeon2 gyro = new WPI_Pigeon2(3);
-
+  WPI_Pigeon2 gyro = new WPI_Pigeon2(0);
+  SendableChooser<String> autoChooser = new SendableChooser<String>();
 
   
 
@@ -56,11 +58,14 @@ public class Robot extends TimedRobot {
 
   double autoStart = 0;
   boolean goForAuto = false;
+  String autoType = "";
 
   double kP;
   double kI;
   double kD;
   double levelingTolerance;
+
+  
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -96,6 +101,15 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("Leveling Tolerance", 0);
     levelingTolerance = SmartDashboard.getNumber("Leveling Tolerance", 0);
+
+    autoChooser.addOption("Cube", "Cube");
+    autoChooser.addOption("Cone", "Cone");
+    autoChooser.addOption("Just Move", "Just Move");
+
+    SmartDashboard.putData(autoChooser);
+
+    //TODO mount the camera, stream is already setup
+    //CameraServer.startAutomaticCapture();
   }
 
   @Override
@@ -104,6 +118,7 @@ public class Robot extends TimedRobot {
     autoStart = Timer.getFPGATimestamp();
     //check dashboard icon to ensure good to do auto
     goForAuto = SmartDashboard.getBoolean("Go For Auto", false);
+    autoType = autoChooser.getSelected();
   }
 
   /** This function is called periodically during autonomous. */
@@ -213,6 +228,7 @@ public class Robot extends TimedRobot {
       armUp = false;
     }  
 
+    SmartDashboard.putNumber("Gyro", gyro.getPitch());
   }
 
   @Override
