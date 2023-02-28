@@ -10,7 +10,6 @@
 */
 
 package frc.robot;
-//TODO add pigeon and auto level
 
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -253,7 +252,7 @@ public class Robot extends TimedRobot {
     PIDController leveler = new PIDController(kP, kI, kD);
 
     leveler.setTolerance(levelingTolerance);
-    
+
     while(leveler.atSetpoint() != false){
       drive(leveler.calculate(gyro.getPitch(), 0));
     }
