@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-i//mport edu.wpi.first.math.controller.ProfiledPIDController;
+//import edu.wpi.first.math.controller.ProfiledPIDController;
 import com.ctre.phoenix.sensors.WPI_Pigeon2;
 
 public class Robot extends TimedRobot {
@@ -35,11 +35,12 @@ public class Robot extends TimedRobot {
   CANSparkMax intake = new CANSparkMax(6, MotorType.kBrushless);
 
   Joystick driverController = new Joystick(0);
+  Joystick gunnerController = new Joystick(1);
 
   WPI_Pigeon2 gyro = new WPI_Pigeon2(3);
 
-  PIDController leveler = new PIDController(.05, 0, 0);
 
+  
 
   //Constants for controlling the arm. consider tuning these for your particular robot
   final double armHoldUp = 0.08;
@@ -57,9 +58,10 @@ public class Robot extends TimedRobot {
   double autoStart = 0;
   boolean goForAuto = false;
 
-  double kP = .05;
-  double kI = 0;
-  double kD = 0;
+  double kP;
+  double kI;
+  double kD;
+  double levelingTolerance;
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -84,6 +86,17 @@ public class Robot extends TimedRobot {
     SmartDashboard.putBoolean("Go For Auto", false);
     goForAuto = SmartDashboard.getBoolean("Go For Auto", false);
 
+    SmartDashboard.putNumber("kP Value", 0);
+    kP = SmartDashboard.getNumber("kP Value", 0);
+
+    SmartDashboard.putNumber("kI Value", 0);
+    kI = SmartDashboard.getNumber("kI Value", 0);
+    
+    SmartDashboard.putNumber("kD Value", 0);
+    kD = SmartDashboard.getNumber("kD Value", 0);
+
+    SmartDashboard.putNumber("Leveling Tolerance", 0);
+    levelingTolerance = SmartDashboard.getNumber("Leveling Tolerance", 0);
   }
 
   @Override
@@ -164,10 +177,10 @@ public class Robot extends TimedRobot {
     driveRightB.set(driveRightPower);
 
     //Intake controls
-    if(driverController.getRawButton(5)){
+    if(gunnerController.getRawButton(5)){
       intake.set(1);;
     }
-    else if(driverController.getRawButton(7)){
+    else if(gunnerController.getRawButton(7)){
       intake.set(-1);
     }
     else{
@@ -192,11 +205,11 @@ public class Robot extends TimedRobot {
       }
     }
   
-    if(driverController.getRawButtonPressed(6) && !armUp){
+    if(gunnerController.getRawButtonPressed(6) && !armUp){
       lastBurstTime = Timer.getFPGATimestamp();
       armUp = true;
     }
-    else if(driverController.getRawButtonPressed(8) && armUp){
+    else if(gunnerController.getRawButtonPressed(8) && armUp){
       lastBurstTime = Timer.getFPGATimestamp();
       armUp = false;
     }  
@@ -231,10 +244,21 @@ public class Robot extends TimedRobot {
    * Attempts to level the robot on the platform
    */
   public void attemptLevel(){
-    leveler.setTolerance(2);
+
+    kP = SmartDashboard.getNumber("kP Value", 0);
+    kI = SmartDashboard.getNumber("kI Value", 0);
+    kD = SmartDashboard.getNumber("kD Value", 0);
+    levelingTolerance = SmartDashboard.getNumber("Leveling Tolerance", 0);
+
+    PIDController leveler = new PIDController(kP, kI, kD);
+
+    leveler.setTolerance(levelingTolerance);
+    
     while(leveler.atSetpoint() != false){
       drive(leveler.calculate(gyro.getPitch(), 0));
     }
+
+    leveler.close();
   }
     
 }
