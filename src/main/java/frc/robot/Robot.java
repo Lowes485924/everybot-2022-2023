@@ -47,10 +47,10 @@ public class Robot extends TimedRobot {
   // robot
   final double armHoldUp = 0.08;
   final double armHoldDown = 0.13;
-  final double armTravel = 0.5;
+  final double armTravel = 0.7;
 
-  final double armTimeUp = 0.5;
-  final double armTimeDown = 0.35;
+  final double armTimeUp = 0.3;
+  final double armTimeDown = 0.2;
 
   // Varibles needed for the code
   boolean armUp = true; // Arm initialized to up because that's how it would start a match
@@ -147,7 +147,7 @@ public class Robot extends TimedRobot {
       // series of timed events making up the flow of auto
       if (autoTimeElapsed < 3) {
         // spit out the ball for three seconds
-        intake.set(-1);
+        intake.set(-.7);
       } else if (autoTimeElapsed < 6) {
         // stop spitting out the ball and drive backwards *slowly* for three seconds
         intake.set(0);
@@ -178,20 +178,20 @@ public class Robot extends TimedRobot {
     // Set up arcade steer
     double forward;
     double turn;
-    double speedCap;
-    
-    if (driverController.getRawButton(5)) { // Rabbit
-      speedCap = 1;
-    } else if (driverController.getRawButton(6)) { // Turtle
-      speedCap = .4;
-    } else { // Default
-      speedCap = .8;
-    }
+    // double speedCap;
 
-    forward = MathUtil.applyDeadband(-driverController.getRawAxis(3), .1);
-    if(forward > speedCap){
-      forward = speedCap;
-    }
+    // if (driverController.getRawButton(5)) { // Rabbit
+    //   speedCap = 1;
+    // } else if (driverController.getRawButton(6)) { // Turtle
+    //   speedCap = .4;
+    // } else { // Default
+    //   speedCap = .8;
+    // }
+
+    forward = MathUtil.applyDeadband(-driverController.getRawAxis(5), .1);
+    // if(forward > speedCap){
+    //   forward = speedCap;
+    // }
 
     turn = MathUtil.applyDeadband(-driverController.getRawAxis(0), .1);
     if (turn > 0.5) {
