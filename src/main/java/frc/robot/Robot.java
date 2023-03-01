@@ -298,11 +298,11 @@ public class Robot extends TimedRobot {
     // Intake controls
     if (gunnerController.getRawButton(5)) {
       intake.set(1);
+      
     } else if (gunnerController.getRawButton(7)) {
       intake.set(-1);
     }else if (gunnerController.getRawButton(8)) {
       intake.set(1);
-      
     } else if (gunnerController.getRawButton(6)) {
       intake.set(-1);
     } else {
