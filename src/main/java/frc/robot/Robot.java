@@ -60,8 +60,10 @@ public class Robot extends TimedRobot {
   boolean burstMode = false;
   double lastBurstTime = 0;
 
+  boolean rightStickForward = true;
+
   double autoStart = 0;
-  boolean goForAuto = false;
+  boolean goForAuto = true;
   String autoType = "";
 
   double kP;
@@ -126,13 +128,12 @@ public class Robot extends TimedRobot {
     autoType = autoChooser.getSelected();
   }
 
-  /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
     // arm control code. same as in teleop
     if (armUp) {
       if (Timer.getFPGATimestamp() - lastBurstTime < armTimeUp) {
-        arm.set(armUpHigh);
+        arm.set(armTravel);
       } else {
         arm.set(armHoldUp);
       }
@@ -143,45 +144,15 @@ public class Robot extends TimedRobot {
         arm.set(-armHoldUp);
       }
     }
-
     // get time since start of auto
     double autoTimeElapsed = Timer.getFPGATimestamp() - autoStart;
-    if (autoType.equals("Cone & Balance")) {
+    if (goForAuto) {
       // series of timed events making up the flow of auto
-      if (autoTimeElapsed < 2) {
+      if (autoTimeElapsed < 3) {
         // spit out the ball for three seconds
-        arm.set(armUpHigh);
-        //intake.set(-.7);
-      } else if(autoTimeElapsed < 3){
+        intake.set(-1);
         intake.set(-.7);
-      }
-      else if (autoTimeElapsed < 6) {
-        // stop spitting out the ball and drive backwards *slowly* for three seconds
-        intake.set(0);
-        driveLeftA.set(-0.3);
-        driveLeftB.set(-0.3);
-        driveRightA.set(-0.3);
-        driveRightB.set(-0.3);
-      } else {
-        // do nothing for the rest of auto
-        //intake.set(0);
-        //driveLeftA.set(0);
-        //driveLeftB.set(0);
-        //driveRightA.set(0);
-        //driveRightB.set(0);
-        attemptLevel();
-      }
-    }
-    else if (autoType.equals("Cone & Move")) {
-      // series of timed events making up the flow of auto
-      if (autoTimeElapsed < 2) {
-        // spit out the ball for three seconds
-        arm.set(armUpHigh);
-        //intake.set(-.7);
-      } else if(autoTimeElapsed < 3){
-        intake.set(-.7);
-      }
-      else if (autoTimeElapsed < 9) {
+      } else if (autoTimeElapsed < 6) {
         // stop spitting out the ball and drive backwards *slowly* for three seconds
         intake.set(0);
         driveLeftA.set(-0.3);
@@ -195,62 +166,6 @@ public class Robot extends TimedRobot {
         driveLeftB.set(0);
         driveRightA.set(0);
         driveRightB.set(0);
-        //attemptLevel();
-      }
-    }
-    else if (autoType.equals("Cube & Balance")) {
-      // series of timed events making up the flow of auto
-      if (autoTimeElapsed < 2) {
-        // spit out the ball for three seconds
-        arm.set(armUpHigh);
-        //intake.set(-.7);
-      } else if(autoTimeElapsed < 3){
-        intake.set(-.7);
-      }
-      else if (autoTimeElapsed < 6) {
-        // stop spitting out the ball and drive backwards *slowly* for three seconds
-        intake.set(0);
-        driveLeftA.set(-0.3);
-        driveLeftB.set(-0.3);
-        driveRightA.set(-0.3);
-        driveRightB.set(-0.3);
-      } else {
-        // do nothing for the rest of auto
-        //intake.set(0);
-        //driveLeftA.set(0);
-        //driveLeftB.set(0);
-        //driveRightA.set(0);
-        //driveRightB.set(0);
-        attemptLevel();
-      }
-    }
-    else if (autoType.equals("Cube & Move")) {
-      // series of timed events making up the flow of auto
-      if (autoTimeElapsed < 2) {
-        // spit out the ball for three seconds
-        arm.set(armUpHigh);
-        //intake.set(-.7);
-      } else if(autoTimeElapsed < 3){
-        intake.set(.7);
-      }
-      else if(autoTimeElapsed < 4){
-
-      }
-      else if (autoTimeElapsed < 8) {
-        // stop spitting out the ball and drive backwards *slowly* for three seconds
-        intake.set(0);
-        driveLeftA.set(-0.3);
-        driveLeftB.set(-0.3);
-        driveRightA.set(-0.3);
-        driveRightB.set(-0.3);
-      } else {
-        // do nothing for the rest of auto
-        intake.set(0);
-        driveLeftA.set(0);
-        driveLeftB.set(0);
-        driveRightA.set(0);
-        driveRightB.set(0);
-        //attemptLevel();
       }
     }
   }
@@ -277,14 +192,20 @@ public class Robot extends TimedRobot {
     //   speedCap = .8;
     // }
 
-    forward = MathUtil.applyDeadband(-driverController.getRawAxis(5), .1);
-    // if(forward > speedCap){
-    //   forward = speedCap;
-    // }
+    if(rightStickForward){
+      forward = MathUtil.applyDeadband(-driverController.getRawAxis(5), .1);
+      turn = MathUtil.applyDeadband(-driverController.getRawAxis(0), .1);
+    }
+    else{
+      forward = MathUtil.applyDeadband(-driverController.getRawAxis(1), .1);
+      turn = MathUtil.applyDeadband(-driverController.getRawAxis(4), .1);
+    }
+    if(forward > .8){
+       forward = .8;
+    }
 
-    turn = MathUtil.applyDeadband(-driverController.getRawAxis(0), .1);
-    if (turn > 0.5) {
-      turn = 0.5;
+    if (turn > 0.4) {
+      turn = 0.4;
     }
 
     double driveLeftPower = forward - turn;
@@ -295,38 +216,38 @@ public class Robot extends TimedRobot {
     driveRightA.set(driveRightPower);
     driveRightB.set(driveRightPower);
 
+
+        // Intake controls
+        if (gunnerController.getRawButton(5)) {
+          intake.set(1);
+          
+        } else if (gunnerController.getRawButton(6)) {
+          intake.set(-1);
+        } else {
+          intake.set(0);
+        }
+
+
     // Intake controls
-    if (gunnerController.getRawButton(5)) {
-      intake.set(1);
+    
+    // if (gunnerController.getRawButton(5)) {
+    //   intake.set(1);
       
-    } else if (gunnerController.getRawButton(7)) {
-      intake.set(-1);
-    }else if (gunnerController.getRawButton(8)) {
-      intake.set(1);
-    } else if (gunnerController.getRawButton(6)) {
-      intake.set(-1);
-    } else {
-      intake.set(0);
-    }
+    // } else if (gunnerController.getRawButton(7)) {
+    //   intake.set(-1);
+    // }else if (gunnerController.getRawButton(8)) {
+    //   intake.set(1);
+    // } else if (gunnerController.getRawButton(6)) {
+    //   intake.set(-1);
+    // } else {
+    //   intake.set(0);
+    // }
 
     // Arm Controls
-    if (armUp == 3) {
+
+    if (armUp) {
       if (Timer.getFPGATimestamp() - lastBurstTime < armTimeUp) {
-        arm.set(armUpTop);
-      } else {
-        arm.set(armHoldUp);
-      }
-    }
-    else if (armUp == 2) {
-      if (Timer.getFPGATimestamp() - lastBurstTime < armTimeUp) {
-        arm.set(armUpMid);
-      } else {
-        arm.set(armHoldUp);
-      }
-    }
-    else if (armUp == 1) {
-      if (Timer.getFPGATimestamp() - lastBurstTime < armTimeUp) {
-        arm.set(armUpLow);
+        arm.set(armTravel);
       } else {
         arm.set(armHoldUp);
       }
@@ -340,20 +261,56 @@ public class Robot extends TimedRobot {
 
     if (gunnerController.getRawButtonPressed(4) && !armUp) {
       lastBurstTime = Timer.getFPGATimestamp();
-      armUp = 3;
-    }
-    else if(gunnerController.getRawButtonPressed(3) && !armUp){
+      armUp = true;
+    } else if (gunnerController.getRawButtonPressed(1) && armUp) {
       lastBurstTime = Timer.getFPGATimestamp();
-      armUp = 2;
+      armUp = false;
     }
-    else if(gunnerController.getRawButtonPressed(1) && !armUp){
-      lastBurstTime = Timer.getFPGATimestamp();
-      armUp = 1;
-    }
-    else if (gunnerController.getRawButtonPressed(2) && armUp) {
-      lastBurstTime = Timer.getFPGATimestamp();
-      armUp = 0;
-    }
+
+    // if (armUp == 3) {
+    //   if (Timer.getFPGATimestamp() - lastBurstTime < armTimeUp) {
+    //     arm.set(armUpTop);
+    //   } else {
+    //     arm.set(armHoldUp);
+    //   }
+    // }
+    // else if (armUp == 2) {
+    //   if (Timer.getFPGATimestamp() - lastBurstTime < armTimeUp) {
+    //     arm.set(armUpMid);
+    //   } else {
+    //     arm.set(armHoldUp);
+    //   }
+    // }
+    // else if (armUp == 1) {
+    //   if (Timer.getFPGATimestamp() - lastBurstTime < armTimeUp) {
+    //     arm.set(armUpLow);
+    //   } else {
+    //     arm.set(armHoldUp);
+    //   }
+    // } else {
+    //   if (Timer.getFPGATimestamp() - lastBurstTime < armTimeDown) {
+    //     arm.set(-armTravel);
+    //   } else {
+    //     arm.set(-armHoldDown);
+    //   }
+    // }
+
+    // if (gunnerController.getRawButtonPressed(4) && !armUp) {
+    //   lastBurstTime = Timer.getFPGATimestamp();
+    //   armUp = 3;
+    // }
+    // else if(gunnerController.getRawButtonPressed(3) && !armUp){
+    //   lastBurstTime = Timer.getFPGATimestamp();
+    //   armUp = 2;
+    // }
+    // else if(gunnerController.getRawButtonPressed(1) && !armUp){
+    //   lastBurstTime = Timer.getFPGATimestamp();
+    //   armUp = 1;
+    // }
+    // else if (gunnerController.getRawButtonPressed(2) && armUp) {
+    //   lastBurstTime = Timer.getFPGATimestamp();
+    //   armUp = 0;
+    // }
 
     SmartDashboard.putNumber("Gyro", gyro.getPitch());
   }
